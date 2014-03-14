@@ -1,11 +1,15 @@
 package com.zsen.sms_delay;
 
 import java.util.ArrayList;
+
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
 import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.View;
@@ -57,6 +61,32 @@ public class MainActivity extends Activity {
 		};
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == Activity.RESULT_OK) {
+			ContentResolver reContentResolverol = getContentResolver();
+			Uri contactData = data.getData();
+			Cursor cursor = managedQuery(contactData, null, null, null, null);
+			cursor.moveToFirst();
+			String username = cursor.getString(cursor
+					.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+			String contactId = cursor.getString(cursor
+					.getColumnIndex(ContactsContract.Contacts._ID));
+			Cursor phone = reContentResolverol.query(
+					ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+					ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = "
+							+ contactId, null, null);
+			while (phone.moveToNext()) {
+				usernumber = phone
+						.getString(phone
+								.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+				editTextReceiver.setText("To:" + username);
+			}
+
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
